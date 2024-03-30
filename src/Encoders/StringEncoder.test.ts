@@ -2,15 +2,15 @@ import { describe, expect, test } from '@jest/globals';
 import { StringEncoder } from './StringEncoder';
 
 describe('StringEncoder', () => {
-  test('Encode & Decode', () => {
+  test.each([
+    { v: '', e: '' },
+    { v: ' ', e: '%20' },
+    { v: 'A!\\B', e: 'A!!%5CB' },
+    { v: null, e: '~' },
+  ])('Should encode/decode "$v" to/from "$e" ', ({ v, e }) => {
     const encoder = new StringEncoder();
 
-    expect(encoder.encode('A')).toBe('A');
-    expect(encoder.encode(' ')).toBe('%20');
-    expect(encoder.encode(null)).toBe('');
-
-    expect(encoder.decode('A')).toBe('A');
-    expect(encoder.decode('%20')).toBe(' ');
-    expect(encoder.decode('')).toBe('');
+    expect(encoder.encode(v)).toBe(e);
+    expect(encoder.decode(e)).toBe(v);
   });
 });

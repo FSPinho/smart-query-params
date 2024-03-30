@@ -2,18 +2,20 @@ import { describe, expect, test } from '@jest/globals';
 import { IntegerEncoder } from './IntegerEncoder';
 
 describe('IntegerEncoder', () => {
-  test('Encode & Decode', () => {
+  test.each([
+    { v: 0, e: '0' },
+    { v: 1, e: '1' },
+    { v: 10, e: '10' },
+    { v: null, e: '' },
+  ])('Should encode/decode "$v" to/from "$e" ', ({ v, e }) => {
     const encoder = new IntegerEncoder();
 
-    expect(encoder.encode(0)).toBe('0');
-    expect(encoder.encode(1)).toBe('1');
-    expect(encoder.encode(2)).toBe('2');
-    expect(encoder.encode(null)).toBe('');
+    expect(encoder.encode(v)).toBe(e);
+    expect(encoder.decode(e)).toBe(v);
+  });
 
-    expect(encoder.decode('0')).toBe(0);
-    expect(encoder.decode('1')).toBe(1);
-    expect(encoder.decode('10')).toBe(10);
-    expect(encoder.decode('')).toBe(null);
-    expect(encoder.decode('X')).toBe(null);
+  test('Should decode invalid to null', () => {
+    const encoder = new IntegerEncoder();
+    expect(encoder.decode('A')).toBe(null);
   });
 });

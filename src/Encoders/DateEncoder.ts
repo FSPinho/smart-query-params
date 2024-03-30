@@ -6,6 +6,7 @@ export class DateEncoder extends BaseEncoder<Date> {
   }
 
   public decode(s: string): Date | null {
-    return s ? new Date(s + 'T00:00Z') : null;
+    const date = new Date(s + 'T00:00Z');
+    return isNaN(+date) ? null : date;
   }
 }

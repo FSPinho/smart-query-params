@@ -1,8 +1,12 @@
 import { BaseEncoder } from './BaseEncoder';
+import { Escaper } from '../Escaper/Escaper';
 
-const DEF_PROP_VAL_SEPARATOR = '.';
-const DEF_PROPS_SEPARATOR = '~';
-const DEF_SCAPE = '!';
+const NULL_VALUE = '~';
+const KEY_VALUE_SEPARATOR = '.';
+const SEPARATOR = '_';
+const ESCAPE = '!';
+
+const ESCAPER = new Escaper({ escapeChar: ESCAPE, escapableChars: [NULL_VALUE, KEY_VALUE_SEPARATOR, SEPARATOR] });
 
 export class ObjectEncoder<
   SCH extends { [key: string]: BaseEncoder<any> },
@@ -12,26 +16,30 @@ export class ObjectEncoder<
 > extends BaseEncoder<OBJ> {
   constructor(private schema: SCH) {
     super();
+    this.validateSchema();
   }
 
-  public encode(obj: OBJ): string {
+  public encode(obj: OBJ | null): string {
+    if (obj === null) return NULL_VALUE;
     return Object.entries(obj)
       .map(([key, val]) => {
         const encodedVal = this.schema[key].encode(val);
-        return `${this.scape(key)}${DEF_PROP_VAL_SEPARATOR}${this.scape(encodedVal)}`;
+        return [ESCAPER.escape(key), KEY_VALUE_SEPARATOR, ESCAPER.escape(encodedVal)].join('');
       })
-      .join(DEF_PROPS_SEPARATOR);
+      .join(SEPARATOR);
   }
 
-  public decode(s: string): OBJ {
+  public decode(s: string): OBJ | null {
+    if (s === NULL_VALUE) return null;
+
     const keyValues = this.decodeKeyValues(s);
 
-    return Object.values(keyValues).reduce((acc, keyValue) => {
-      const match = keyValue.match(new RegExp(`[^${DEF_SCAPE}]${DEF_PROP_VAL_SEPARATOR}`));
+    return keyValues.reduce((acc, keyValue) => {
+      const match = keyValue.match(new RegExp(`[^${ESCAPE}]${KEY_VALUE_SEPARATOR}`));
       if (!match || match.index === undefined) return;
 
-      const key = this.undoScape(keyValue.slice(0, match.index + 1));
-      const value = this.undoScape(keyValue.slice(match.index + 2));
+      const key = ESCAPER.unescape(keyValue.slice(0, match.index + 1));
+      const value = ESCAPER.unescape(keyValue.slice(match.index + 2));
       const decodedValue = this.schema[key].decode(value);
 
       return { ...acc, [key]: decodedValue };
@@ -42,7 +50,7 @@ export class ObjectEncoder<
     const props: Array<string> = [];
 
     while (s.length) {
-      const match = s.match(new RegExp(`[^${DEF_SCAPE}]${DEF_PROPS_SEPARATOR}`));
+      const match = s.match(new RegExp(`[^${ESCAPE}]${SEPARATOR}`));
       if (!match || match.index === undefined) {
         props.push(s);
         break;
@@ -54,17 +62,11 @@ export class ObjectEncoder<
     return props;
   }
 
-  private scape(s: string) {
-    return s.replace(
-      new RegExp(`(\\${DEF_PROP_VAL_SEPARATOR}|${DEF_PROPS_SEPARATOR}|${DEF_SCAPE})`, 'g'),
-      `${DEF_SCAPE}$1`,
-    );
-  }
-
-  private undoScape(s: string) {
-    return s.replace(
-      new RegExp(`${DEF_SCAPE}(\\${DEF_PROP_VAL_SEPARATOR}|${DEF_PROPS_SEPARATOR}|${DEF_SCAPE})`, 'g'),
-      '$1',
-    );
+  private validateSchema() {
+    for (const [prop, propEncoder] of Object.entries(this.schema)) {
+      if (propEncoder instanceof ObjectEncoder) {
+        // throw new Error(`Nested objects are not supported. Received an ObjectEncoder for the prop "${prop}"`);
+      }
+    }
   }
 }

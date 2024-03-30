@@ -2,16 +2,19 @@ import { describe, expect, test } from '@jest/globals';
 import { BooleanEncoder } from './BooleanEncoder';
 
 describe('BooleanEncoder', () => {
-  test('Encode & Decode', () => {
+  test.each([
+    { v: true, e: 't' },
+    { v: false, e: 'f' },
+    { v: null, e: '' },
+  ])('Should encode/decode "$v" to/from "$e" ', ({ v, e }) => {
     const encoder = new BooleanEncoder();
 
-    expect(encoder.encode(true)).toBe('t');
-    expect(encoder.encode(false)).toBe('f');
-    expect(encoder.encode(null)).toBe('');
+    expect(encoder.encode(v)).toBe(e);
+    expect(encoder.decode(e)).toBe(v);
+  });
 
-    expect(encoder.decode('t')).toBe(true);
-    expect(encoder.decode('f')).toBe(false);
-    expect(encoder.decode('')).toBe(null);
-    expect(encoder.decode('X')).toBe(null);
+  test('Should decode invalid to null', () => {
+    const encoder = new BooleanEncoder();
+    expect(encoder.decode('A')).toBe(null);
   });
 });
