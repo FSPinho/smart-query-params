@@ -2,10 +2,26 @@
   "name": "smart-query-params",
   "version": "0.1.0",
   "source": "src/index.ts",
-  "main": "dist/index.js",
+  "main": "dist/main.js",
+  "module": "dist/module.js",
   "types": "dist/index.d.ts",
-  "author": "Felipe Pinho",
+  "author": "Felipe Pinho <felipepinhodev@gmail.com>",
   "license": "MIT",
+  "targets": {
+    "main": {
+      "optimize": true
+    },
+    "module": {
+      "optimize": true
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FSPinho/smart-query-params.git"
+  },
   "scripts": {
     "clear": "rm -rf dist; rm -rf .parcel-cache",
     "build": "parcel build",

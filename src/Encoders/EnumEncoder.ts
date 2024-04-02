@@ -1,9 +1,6 @@
 import { BaseEncoder } from './BaseEncoder';
 
-export class EnumEncoder<
-  KV extends { [key: string]: string },
-  K extends keyof KV,
-> extends BaseEncoder<keyof KV> {
+export class EnumEncoder<KV extends { [key: string]: string }, K extends keyof KV> extends BaseEncoder<keyof KV> {
   constructor(private keyValueMap: KV) {
     super();
   }
@@ -13,7 +10,7 @@ export class EnumEncoder<
   }
 
   public decode(v: string): K | null {
-    const value = Object.entries(this.keyValueMap)
+    const value = (Object.entries(this.keyValueMap) as Array<[string, string]>)
       .filter(([, val]) => val === v)
       .map(([key]) => key)[0] as K | null;
     if (!value) return null;

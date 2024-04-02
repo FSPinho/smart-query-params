@@ -21,7 +21,7 @@ export class ObjectEncoder<
 
   public encode(obj: OBJ | null): string {
     if (obj === null) return NULL_VALUE;
-    return Object.entries(obj)
+    return (Object.entries(obj) as Array<[string, any]>)
       .map(([key, val]) => {
         const encodedVal = this.schema[key].encode(val);
         return [ESCAPER.escape(key), KEY_VALUE_SEPARATOR, ESCAPER.escape(encodedVal)].join('');
