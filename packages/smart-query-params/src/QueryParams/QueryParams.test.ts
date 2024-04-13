@@ -1,4 +1,4 @@
-import { describe, expect, test, xtest } from '@jest/globals';
+import { describe, expect, test } from '@jest/globals';
 import { QueryParams } from './QueryParams';
 import { QueryParamsListener } from './QueryParamsListener';
 
