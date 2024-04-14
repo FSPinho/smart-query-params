@@ -1,5 +1,8 @@
-.parcel-cache/
-.idea/
+.DS_Store
 
-node_modules/
+.idea/
+.parcel-cache/
+.nx/
+
 dist/
+node_modules/
