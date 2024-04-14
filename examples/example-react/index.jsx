@@ -15,6 +15,9 @@ const DEF_VALUES = {
     street: 'Iberville',
     city: 'Montreal',
   },
+  nested: {
+    arr: [{ value: 10 }],
+  },
 };
 
 function App() {
@@ -28,6 +31,9 @@ function App() {
       address: f.object({
         street: f.string(),
         city: f.string(),
+      }),
+      nested: f.object({
+        arr: f.array(f.object({ value: f.integer() })),
       }),
     }),
   });
@@ -77,7 +83,9 @@ function App() {
       <h1>Example with React</h1>
 
       <pre className={'params-box'}>{JSON.stringify(params, null, 2)}</pre>
-      <pre className={'params-box'}>Query params: {window.location.search.replace(/(\?|&)/g, '\n  ')}</pre>
+      <pre className={'params-box'}>
+        Query params: {decodeURIComponent(window.location.search).replace(/([?&])/g, '\n  ')}
+      </pre>
 
       <textarea onChange={handleChange} value={paramsJson} rows={15} cols={70} />
 
