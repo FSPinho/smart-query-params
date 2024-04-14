@@ -13,6 +13,11 @@ describe('DateEncoder', () => {
     expect(encoder.decode(e)).toStrictEqual(v);
   });
 
+  test.each([{ v: '' }, { v: 10 }, { v: {} }])('Should throw before encode "$v"', ({ v }) => {
+    const encoder = new DateEncoder();
+    expect(() => encoder.encode(v as any)).toThrow();
+  });
+
   test('Should decode invalid to null', () => {
     const encoder = new DateEncoder();
     expect(encoder.decode('A')).toBe(null);

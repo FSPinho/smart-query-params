@@ -1,9 +1,9 @@
 import { BaseEncoder } from './BaseEncoder';
 import { Escaper } from '../Escaper/Escaper';
 
-const NULL_VALUE = '~';
+const NULL_VALUE = '-';
 const SEPARATOR = '_';
-const ESCAPE = '!';
+const ESCAPE = '~';
 
 const ESCAPER = new Escaper({ escapeChar: ESCAPE, escapableChars: [NULL_VALUE, SEPARATOR] });
 
@@ -15,13 +15,21 @@ export class ArrayEncoder<
     super();
   }
 
-  public encode(arr: IA | null): string {
-    if (arr === null) return NULL_VALUE;
+  public encode(arr: IA | null | undefined): string {
+    if (arr === null || arr === undefined) return NULL_VALUE;
+
+    this.validateToEncode(arr);
+
     return arr
       .map((val) => {
         return ESCAPER.escape(this.itemEncoder.encode(val));
       })
       .join(SEPARATOR);
+  }
+
+  private validateToEncode(value: any) {
+    const isArray = typeof value === 'object' && typeof value.forEach === 'function';
+    !isArray && this.throwInvalidValue(String(value));
   }
 
   public decode(s: string): IA | null {
@@ -34,7 +42,7 @@ export class ArrayEncoder<
     const props: Array<string> = [];
 
     while (s.length) {
-      const match = s.match(new RegExp(`[^${ESCAPE}]${SEPARATOR}`));
+      const match = s.match(new RegExp(`[^${ESCAPER.getRegexSafeChar(ESCAPE)}]${ESCAPER.getRegexSafeChar(SEPARATOR)}`));
       if (!match || match.index === undefined) {
         props.push(s);
         break;

@@ -1,10 +1,10 @@
 import { BaseEncoder } from './BaseEncoder';
 import { Escaper } from '../Escaper/Escaper';
 
-const NULL_VALUE = '~';
+const NULL_VALUE = '-';
 const KEY_VALUE_SEPARATOR = '.';
 const SEPARATOR = '_';
-const ESCAPE = '!';
+const ESCAPE = '~';
 
 const ESCAPER = new Escaper({ escapeChar: ESCAPE, escapableChars: [NULL_VALUE, KEY_VALUE_SEPARATOR, SEPARATOR] });
 
@@ -20,7 +20,10 @@ export class ObjectEncoder<
   }
 
   public encode(obj: OBJ | null): string {
-    if (obj === null) return NULL_VALUE;
+    if (obj === null || obj === undefined) return NULL_VALUE;
+
+    this.validateToEncode(obj);
+
     return (Object.entries(obj) as Array<[string, any]>)
       .map(([key, val]) => {
         const encodedVal = this.schema[key].encode(val);
@@ -29,13 +32,20 @@ export class ObjectEncoder<
       .join(SEPARATOR);
   }
 
+  private validateToEncode(value: any) {
+    const isObject = typeof value === 'object';
+    !isObject && this.throwInvalidValue(String(value));
+  }
+
   public decode(s: string): OBJ | null {
     if (s === NULL_VALUE) return null;
 
     const keyValues = this.decodeKeyValues(s);
 
     return keyValues.reduce((acc, keyValue) => {
-      const match = keyValue.match(new RegExp(`[^${ESCAPE}]${KEY_VALUE_SEPARATOR}`));
+      const match = keyValue.match(
+        new RegExp(`[^${ESCAPER.getRegexSafeChar(ESCAPE)}]${ESCAPER.getRegexSafeChar(KEY_VALUE_SEPARATOR)}`),
+      );
       if (!match || match.index === undefined) return;
 
       const key = ESCAPER.unescape(keyValue.slice(0, match.index + 1));
@@ -50,7 +60,7 @@ export class ObjectEncoder<
     const props: Array<string> = [];
 
     while (s.length) {
-      const match = s.match(new RegExp(`[^${ESCAPE}]${SEPARATOR}`));
+      const match = s.match(new RegExp(`[^${ESCAPER.getRegexSafeChar(ESCAPE)}]${ESCAPER.getRegexSafeChar(SEPARATOR)}`));
       if (!match || match.index === undefined) {
         props.push(s);
         break;

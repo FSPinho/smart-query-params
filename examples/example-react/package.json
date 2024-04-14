@@ -1,0 +1,21 @@
+{
+  "name": "example-react",
+  "version": "1.0.0",
+  "source": "index.html",
+  "license": "MIT",
+  "scripts": {
+    "clear": "rm -rf dist .parcel-cache",
+    "serve": "yarn parcel serve",
+    "start": "yarn clear; yarn serve",
+    "build": "echo 'Nothing to do.'"
+  },
+  "devDependencies": {
+    "parcel": "^2.12.0",
+    "process": "^0.11.10"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-smart-query-params": "^0.1.0"
+  }
+}

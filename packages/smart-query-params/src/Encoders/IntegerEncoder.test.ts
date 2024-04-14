@@ -14,6 +14,11 @@ describe('IntegerEncoder', () => {
     expect(encoder.decode(e)).toBe(v);
   });
 
+  test.each([{ v: '' }, { v: false }, { v: {} }])('Should throw before encode "$v"', ({ v }) => {
+    const encoder = new IntegerEncoder();
+    expect(() => encoder.encode(v as any)).toThrow();
+  });
+
   test('Should decode invalid to null', () => {
     const encoder = new IntegerEncoder();
     expect(encoder.decode('A')).toBe(null);

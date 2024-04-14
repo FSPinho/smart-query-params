@@ -6,7 +6,18 @@ export class EnumEncoder<KV extends { [key: string]: string }, K extends keyof K
   }
 
   public encode(k: K | null): string {
-    return k ? this.keyValueMap[k] : '';
+    if (k === null || k === undefined) {
+      return '';
+    }
+
+    this.validateToEncode(k);
+
+    return this.keyValueMap[k];
+  }
+
+  private validateToEncode(value: any) {
+    const isValid = value in this.keyValueMap;
+    !isValid && this.throwInvalidValue(String(value));
   }
 
   public decode(v: string): K | null {

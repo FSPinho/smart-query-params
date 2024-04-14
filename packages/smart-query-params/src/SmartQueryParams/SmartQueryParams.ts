@@ -11,6 +11,10 @@ export interface Schema {
   [key: string]: BaseEncoder<any>;
 }
 
+export type SchemaOutObject<SCH extends Schema> = {
+  [key in keyof SCH]: (SCH[key] extends BaseEncoder<infer T> ? T : unknown) | null;
+};
+
 export interface Listener {
   type: EventType;
   handler: (event: Event) => void;
@@ -22,12 +26,7 @@ export interface Event {
 
 export type EventType = 'change';
 
-export class SmartQueryParams<
-  SCH extends Schema,
-  OBJ extends {
-    [key in keyof SCH]: (SCH[key] extends BaseEncoder<infer T> ? T : unknown) | null;
-  },
-> {
+export class SmartQueryParams<SCH extends Schema, OBJ extends SchemaOutObject<SCH>> {
   private readonly schema: Schema;
   private readonly queryParams: QueryParams;
   private readonly queryParamsListener: QueryParamsListener;
@@ -51,24 +50,28 @@ export class SmartQueryParams<
     };
   }
 
-  public pushParams(params: Partial<OBJ>): void {
-    this.queryParams.pushParams(this.encodeParams(params));
+  public pushParams(params: Partial<OBJ>, options = { autoClear: false }): void {
+    this.queryParams.pushParams(this.encodeParams(params, options));
   }
 
-  public replaceParams(params: Partial<OBJ>): void {
-    this.queryParams.replaceParams(this.encodeParams(params));
+  public replaceParams(params: Partial<OBJ>, options = { autoClear: false }): void {
+    this.queryParams.replaceParams(this.encodeParams(params, options));
   }
 
   public getParams(): OBJ {
     return this.decodeParams();
   }
 
-  private encodeParams(params: Partial<OBJ>) {
-    const rawParams: any = {};
+  private encodeParams(params: Partial<OBJ>, options = { autoClear: false }) {
+    const rawParams: any = options.autoClear ? {} : this.queryParams.getParams();
 
     for (const [name, encoder] of Object.entries(this.schema)) {
       const value = params[name] ?? null;
-      rawParams[name] = encoder.encode(value);
+      if (value === null) {
+        delete rawParams[name];
+      } else {
+        rawParams[name] = encoder.encode(value);
+      }
     }
 
     return rawParams;

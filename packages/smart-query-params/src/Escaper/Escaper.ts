@@ -27,7 +27,7 @@ export class Escaper {
     );
   }
 
-  private getRegexSafeChar(char: string) {
+  public getRegexSafeChar(char: string) {
     if ('\\^$.|?*+()[]{}'.includes(char)) {
       return `\\${char}`;
     }

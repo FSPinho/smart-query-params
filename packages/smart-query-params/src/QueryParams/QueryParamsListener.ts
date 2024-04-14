@@ -23,7 +23,7 @@ export class QueryParamsListener {
       this.notifyListener();
     };
     history.replaceState = (...args) => {
-      _replaceState.call(this, ...args);
+      _replaceState.call(history, ...args);
       this.notifyListener();
     };
 
